@@ -19,11 +19,13 @@ import net.sourceforge.pmd.RuleViolation;
 import net.sourceforge.pmd.lang.ast.DummyNode;
 import net.sourceforge.pmd.lang.ast.Node;
 import net.sourceforge.pmd.lang.ast.ParseException;
+import net.sourceforge.pmd.lang.ast.xpath.AbstractASTXPathHandler;
 import net.sourceforge.pmd.lang.ast.xpath.DocumentNavigator;
 import net.sourceforge.pmd.lang.rule.AbstractRuleChainVisitor;
 import net.sourceforge.pmd.lang.rule.AbstractRuleViolationFactory;
 import net.sourceforge.pmd.lang.rule.ParametricRuleViolation;
 
+import net.sf.saxon.expr.XPathContext;
 import net.sf.saxon.sxpath.IndependentContext;
 
 /**
@@ -36,15 +38,15 @@ public class DummyLanguageModule extends BaseLanguageModule {
 
     public DummyLanguageModule() {
         super(NAME, null, TERSE_NAME, DummyRuleChainVisitor.class, "dummy");
-        addVersion("1.0", new Handler(), false);
-        addVersion("1.1", new Handler(), false);
-        addVersion("1.2", new Handler(), false);
-        addVersion("1.3", new Handler(), false);
-        addVersion("1.4", new Handler(), false);
-        addVersions(new Handler(), false, "1.5", "5");
-        addVersions(new Handler(), false, "1.6", "6");
-        addVersions(new Handler(), true, "1.7", "7");
-        addVersions(new Handler(), false, "1.8", "8");
+        addVersion("1.0", new Handler());
+        addVersion("1.1", new Handler());
+        addVersion("1.2", new Handler());
+        addVersion("1.3", new Handler());
+        addVersion("1.4", new Handler());
+        addVersion("1.5", new Handler(), "5");
+        addVersion("1.6", new Handler(), "6");
+        addDefaultVersion("1.7", new Handler(), "7");
+        addVersion("1.8", new Handler(), "8");
     }
 
     public static class DummyRuleChainVisitor extends AbstractRuleChainVisitor {
@@ -67,11 +69,18 @@ public class DummyLanguageModule extends BaseLanguageModule {
     }
 
     public static class Handler extends AbstractLanguageVersionHandler {
+        public static class TestFunctions {
+            public static boolean typeIs(final XPathContext context, final String fullTypeName) {
+                return false;
+            }
+        }
+
         @Override
         public XPathHandler getXPathHandler() {
-            return new XPathHandler() {
+            return new AbstractASTXPathHandler() {
                 @Override
                 public void initialize(IndependentContext context) {
+                    super.initialize(context, LanguageRegistry.getLanguage(DummyLanguageModule.NAME), TestFunctions.class);
                 }
 
                 @Override
